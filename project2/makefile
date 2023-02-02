@@ -8,7 +8,7 @@ CFLAGS= -std=c99 -Wall
 
 SOURCE = myshell.c
 OBJECT = myshell.o 
-EXECUTABLE = mysh
+EXECUTABLE = mysh.out
 
 
 all: $(EXECUTABLE)

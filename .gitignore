@@ -1,0 +1,5 @@
+# exclude object files
+*.o
+
+# exclude executables
+*.out
