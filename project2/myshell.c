@@ -11,7 +11,8 @@ File Name: myshell.c */
 #include <dirent.h>
 #include <string.h>
 
-void listfiles();
+void listfiles(char *curdir);
+void changedir(char *path);
 
 int main(int argc, char *argv[])
 {
@@ -22,28 +23,45 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // Initialize Variables:
-    char command[1000];
-
-    // Get User Input:
-    // printf("myshell>\n");
-
-    scanf("%s", command);
-
-    if (strcmp(command, "listfiles") == 0)
+    while (1)
     {
-        listfiles();
+        // Initialize Variables:
+        char command[1000];
+        char path[1000];
+
+        // Get User Input:
+        printf("myshell>\n");
+
+        scanf("%s", command);
+
+        if (strcmp(command, "list-files") == 0)
+        {
+            listfiles(".");
+        }
+        else if (strcmp(command, "change-dir") == 0)
+        {
+            scanf("%s", path);
+            changedir(path);
+        }
+        else if (strcmp(command, "exit") == 0)
+        {
+            exit(0);
+        }
+        else
+        {
+            printf("\nInvalid Command\n");
+        }
     }
 
     return 0;
 }
 
-void listfiles()
+void listfiles(char *curdir)
 {
     DIR *dp;
     struct dirent *subdir;
 
-    if ((dp = opendir(".")) == NULL) // if there is an error reading in a directory
+    if ((dp = opendir(curdir)) == NULL) // if there is an error reading in a directory
     {
         printf("Error opening directory\n");
         exit(1);
@@ -58,5 +76,19 @@ void listfiles()
         }
 
         printf("%s\n", subdir->d_name);
+    }
+}
+
+void changedir(char *path)
+{
+    printf("%s", path);
+    if (chdir(path) == -1)
+    {
+        printf("Error changing directory\n");
+        exit(1);
+    }
+    else
+    {
+        printf("Directory changed to %s\n", path);
     }
 }
