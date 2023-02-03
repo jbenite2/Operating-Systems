@@ -10,6 +10,7 @@ File Name: myshell.c */
 #include <unistd.h>
 #include <dirent.h>
 #include <string.h>
+#include <signal.h>
 
 void listfiles(char *curdir);
 void changedir(char *path);
@@ -20,6 +21,7 @@ void startprocess(char **argv, int i);
 void waitforanychild();
 void waitforachild(int label);
 void runprocess(char **argv, int i);
+void killprocess(int pid);
 
 int bytes_sum = 0;
 
@@ -111,6 +113,12 @@ int main(int argc, char *argv[])
             }
 
             runprocess(argv, i);
+        }
+        else if (strcmp(command, "kill-process") == 0)
+        {
+            int pid;
+            scanf("%d", &pid);
+            killprocess(pid);
         }
         else if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
         {
@@ -425,5 +433,18 @@ void runprocess(char **argv, int i)
         {
             printf("No such process. \n");
         }
+    }
+}
+
+void killprocess(int pid)
+{
+    if (kill(pid, SIGSTOP) == -1)
+    {
+        printf("Unable to kill process %d\n", pid);
+        exit(1);
+    }
+    else
+    {
+        printf("Process %d has been killed\n", pid);
     }
 }
