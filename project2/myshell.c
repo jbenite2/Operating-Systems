@@ -19,6 +19,7 @@ void helper_cp(char *input, char *output);
 void startprocess(char **argv, int i);
 void waitforanychild();
 void waitforachild(int label);
+void runprocess(char **argv, int i);
 
 int bytes_sum = 0;
 
@@ -92,6 +93,24 @@ int main(int argc, char *argv[])
             int label;
             scanf("%d", &label);
             waitforachild(label);
+        }
+        else if (strcmp(command, "run-process") == 0)
+        {
+            char *argv[10000]; // array of strings
+            char *ptr;
+            char arguments[100];
+
+            scanf("%[^\n]s", arguments);
+            ptr = strtok(arguments, " ");
+            int i = 0;
+            while (ptr != NULL)
+            {
+                argv[i] = ptr;
+                ptr = strtok(NULL, " ");
+                i++;
+            }
+
+            runprocess(argv, i);
         }
         else if (strcmp(command, "exit") == 0)
         {
@@ -337,6 +356,60 @@ void waitforachild(int label)
     {
         // this is the parent process
         pid_t wpid = wait(&status);
+
+        if (wpid == -1)
+        {
+            printf("Error waiting for child process\n");
+            exit(1);
+        }
+
+        if (WIFEXITED(status) && wpid == label)
+        {
+            printf("myshell: process %d exited normally with status %d\n", wpid, WEXITSTATUS(status));
+        }
+        else
+        {
+            printf("No such process. \n");
+        }
+    }
+}
+
+void runprocess(char **argv, int i)
+{
+    char *subcommand = argv[0];
+    char *sliced[i - 1];
+    int status;
+
+    for (int j = 1; j < i; j++)
+    {
+        sliced[j - 1] = argv[j];
+    }
+
+    pid_t pid = fork();
+    printf("myshell: process %d started\n", pid);
+    if (pid == -1)
+    {
+        printf("Error getting process id\n");
+        exit(1);
+    }
+    else if (pid == 0)
+    {
+        // this is the child process
+
+        if (execvp(subcommand, argv) == -1) // Step 3: Execute the child process
+        {
+            printf("Error executing child process\n");
+            exit(1);
+        }
+        exit(0); // Step 4: Exit the child process
+    }
+    else
+    {
+        // this is the parent process
+
+        int label = pid; // Step 1: Get the process id of the child process
+
+        pid_t wpid = wait(&status); // Step 2: Wait for the child process to finish
 
         if (wpid == -1)
         {
