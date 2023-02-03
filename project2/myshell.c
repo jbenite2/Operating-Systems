@@ -14,6 +14,10 @@ File Name: myshell.c */
 void listfiles(char *curdir);
 void changedir(char *path);
 void printdir();
+void copyfile(char *read_path, char *write_path);
+void helper_cp(char *input, char *output);
+
+int bytes_sum = 0;
 
 int main(int argc, char *argv[])
 {
@@ -51,6 +55,16 @@ int main(int argc, char *argv[])
         else if (strcmp(command, "exit") == 0)
         {
             exit(0);
+        }
+        else if (strcmp(command, "copy-file") == 0)
+        {
+            char source[1000];
+            char destination[1000];
+            scanf("%s", source);
+            scanf("%s", destination);
+            copyfile(source, destination);
+            printf("copied %d bytes from %s to %s\n", bytes_sum, source, destination);
+            bytes_sum = 0;
         }
         else
         {
@@ -110,4 +124,97 @@ void printdir()
     {
         printf("Current directory is %s\n", newdir);
     }
+}
+
+void copyfile(char *read_path, char *write_path)
+{
+    DIR *dp;
+    struct dirent *dirp;
+
+    struct stat buf;
+    stat(read_path, &buf);
+
+    if (S_ISREG(buf.st_mode)) // S_ISREG() returns true this means it is a valid file
+    {
+        helper_cp(read_path, write_path);
+        return;
+    }
+    if ((dp = opendir(read_path)) == NULL) // if there is an error reading in a directory
+    {
+        printf("Error opening directory\n");
+        exit(1);
+    }
+
+    mkdir(write_path, buf.st_mode);
+
+    while ((dirp = readdir(dp)) != NULL)
+    {
+        char nsbuf[4096];
+        char ndbuf[4096];
+
+        if (strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0)
+        {
+            continue;
+        }
+
+        sprintf(nsbuf, "%s/%s", read_path, dirp->d_name);
+        sprintf(ndbuf, "%s/%s", write_path, dirp->d_name);
+
+        copyfile(nsbuf, ndbuf);
+    }
+    closedir(dp);
+}
+
+void helper_cp(char *input, char *output)
+{
+    // Variable Assignment
+    char buffer[4096];
+    int source = open(input, O_RDONLY);
+    if (source == -1) // If input file doesn't exists
+    {
+        printf("couldn't open %s: No such file or directory.\n", input);
+        exit(1);
+    }
+
+    int target = open(output, O_RDWR | O_EXCL | O_CREAT, 0666);
+    if (target == -1) // If output file already exists finish the program
+    {
+        printf("The output file already exists\n");
+        exit(1);
+    }
+
+    int bytes = 0;
+
+    while (1)
+    {
+        // Get the bytes possibly up to the size of the buffer
+        int bytes_read = read(source, buffer, sizeof(buffer));
+
+        // If bytes read in this iterations are none then break out of the loop
+        if (bytes_read <= 0)
+        {
+            break;
+        }
+
+        // Write to the target file and return the number of bytes written
+        int bytes_written = write(target, buffer, bytes_read);
+
+        // Managing the error where the write function falls short of the bytes to be written
+        if (bytes_read != bytes_written)
+        {
+            int mod_bytes = bytes_read - bytes_written;
+            bytes_written = write(target, &buffer[bytes_written], mod_bytes);
+        }
+        bytes = bytes + bytes_read;
+    }
+
+    // printf("copied %d bytes from %s to %s\n", bytes, input, output);
+    printf("%s -> %s\n", input, output);
+
+    // Finally close used files
+    close(source);
+    close(target);
+
+    // Modifying global
+    bytes_sum = bytes_sum + bytes;
 }
