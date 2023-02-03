@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 
             runprocess(argv, i);
         }
-        else if (strcmp(command, "exit") == 0)
+        else if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0)
         {
             exit(0);
         }
