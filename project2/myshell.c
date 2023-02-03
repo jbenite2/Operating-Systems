@@ -16,6 +16,7 @@ void changedir(char *path);
 void printdir();
 void copyfile(char *read_path, char *write_path);
 void helper_cp(char *input, char *output);
+void startprocess(char **argv, int i);
 
 int bytes_sum = 0;
 
@@ -32,7 +33,6 @@ int main(int argc, char *argv[])
     {
         // Initialize Variables:
         char command[1000];
-        char path[1000];
 
         // Get User Input:
         printf("\nmyshell>\n");
@@ -45,16 +45,13 @@ int main(int argc, char *argv[])
         }
         else if (strcmp(command, "change-dir") == 0)
         {
+            char path[1000];
             scanf("%s", path);
             changedir(path);
         }
         else if (strcmp(command, "print-dir") == 0)
         {
             printdir(".");
-        }
-        else if (strcmp(command, "exit") == 0)
-        {
-            exit(0);
         }
         else if (strcmp(command, "copy-file") == 0)
         {
@@ -63,8 +60,30 @@ int main(int argc, char *argv[])
             scanf("%s", source);
             scanf("%s", destination);
             copyfile(source, destination);
-            printf("copied %d bytes from %s to %s\n", bytes_sum, source, destination);
+            printf("copy file: copied %d bytes from %s to %s\n", bytes_sum, source, destination);
             bytes_sum = 0;
+        }
+        else if (strcmp(command, "start-process") == 0)
+        {
+            char *argv[10000]; // array of strings
+            char *ptr;
+            char arguments[100];
+
+            scanf("%[^\n]s", arguments);
+            ptr = strtok(arguments, " ");
+            int i = 0;
+            while (ptr != NULL)
+            {
+                argv[i] = ptr;
+                ptr = strtok(NULL, " ");
+                i++;
+            }
+
+            startprocess(argv, i);
+        }
+        else if (strcmp(command, "exit") == 0)
+        {
+            exit(0);
         }
         else
         {
@@ -217,4 +236,39 @@ void helper_cp(char *input, char *output)
 
     // Modifying global
     bytes_sum = bytes_sum + bytes;
+}
+
+void startprocess(char **argv, int i)
+{
+
+    char *subcommand = argv[0];
+    char *sliced[i - 1];
+
+    for (int j = 1; j < i; j++)
+    {
+        sliced[j - 1] = argv[j];
+    }
+
+    pid_t pid = fork();
+    printf("myshell: process %d started\n", pid);
+    if (pid == -1)
+    {
+        printf("Error getting process id\n");
+        exit(1);
+    }
+    else if (pid == 0)
+    {
+        // this is the child process
+
+        if (execvp(subcommand, argv) == -1)
+        {
+            printf("Error executing child process\n");
+            exit(1);
+        }
+    }
+    else
+    {
+        // this is the parent process
+        printf("I am the parent process: PID %d\n", pid);
+    }
 }
