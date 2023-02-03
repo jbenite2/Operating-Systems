@@ -146,14 +146,75 @@ void listfiles(char *curdir)
 
     while ((subdir = readdir(dp)) != NULL)
     {
-        // struct stat *buf;
-        // if (stat(subdir, &buf) == 0)
-        // {
-        //     printf("Error opening file\n");
-        //     exit(1);
-        // }
+        // File Type
+        if (subdir->d_type == DT_DIR)
+        {
+            printf("D ");
+        }
+        else
+        {
+            printf("F ");
+        }
 
-        printf("%s\n", subdir->d_name);
+        // File Name
+        printf("%-10s", subdir->d_name);
+
+        struct stat buf;
+        if (stat(subdir->d_name, &buf) != 0)
+        {
+            printf("\n Error opening file\n");
+            exit(1);
+        }
+
+        // Owner Permissions
+        char owner[] = "---";
+        if (buf.st_mode & S_IRUSR)
+        {
+            owner[0] = 'r';
+        }
+        if (buf.st_mode & S_IWUSR)
+        {
+            owner[1] = 'w';
+        }
+        if (buf.st_mode & S_IXUSR)
+        {
+            owner[2] = 'x';
+        }
+
+        // Group Permissions
+        char group[] = "---";
+        if (buf.st_mode & S_IRGRP)
+        {
+            group[0] = 'r';
+        }
+        if (buf.st_mode & S_IWGRP)
+        {
+            group[1] = 'w';
+        }
+        if (buf.st_mode & S_IXGRP)
+        {
+            group[2] = 'x';
+        }
+
+        // Other Permissions
+        char other[] = "---";
+        if (buf.st_mode & S_IROTH)
+        {
+            other[0] = 'r';
+        }
+        if (buf.st_mode & S_IWOTH)
+        {
+            other[1] = 'w';
+        }
+        if (buf.st_mode & S_IXOTH)
+        {
+            other[2] = 'x';
+        }
+
+        printf("user:%s group:%s other:%s", owner, group, other);
+
+        // File Size
+        printf("  %d bytes \n", (int)buf.st_size);
     }
 }
 
