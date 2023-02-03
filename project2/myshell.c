@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
             scanf("%s", source);
             scanf("%s", destination);
             copyfile(source, destination);
-            printf("copy file: copied %d bytes from %s to %s\n", bytes_sum, source, destination);
+            printf("copy-file: copied %d bytes from %s to %s\n", bytes_sum, source, destination);
             bytes_sum = 0;
         }
         else if (strcmp(command, "start-process") == 0)
