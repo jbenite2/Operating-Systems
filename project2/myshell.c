@@ -220,6 +220,11 @@ void listfiles(char *curdir)
 
 void changedir(char *path)
 {
+    if (path[0] == '/')
+    {
+        path++;
+    }
+
     if (chdir(path) == -1)
     {
         printf("Error changing directory\n");
