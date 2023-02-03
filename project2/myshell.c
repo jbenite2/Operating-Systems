@@ -13,6 +13,7 @@ File Name: myshell.c */
 
 void listfiles(char *curdir);
 void changedir(char *path);
+void printdir();
 
 int main(int argc, char *argv[])
 {
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
         char path[1000];
 
         // Get User Input:
-        printf("myshell>\n");
+        printf("\nmyshell>\n");
 
         scanf("%s", command);
 
@@ -42,6 +43,10 @@ int main(int argc, char *argv[])
         {
             scanf("%s", path);
             changedir(path);
+        }
+        else if (strcmp(command, "print-dir") == 0)
+        {
+            printdir(".");
         }
         else if (strcmp(command, "exit") == 0)
         {
@@ -61,7 +66,7 @@ void listfiles(char *curdir)
     DIR *dp;
     struct dirent *subdir;
 
-    if ((dp = opendir(curdir)) == NULL) // if there is an error reading in a directory
+    if ((dp = opendir(curdir)) == NULL)
     {
         printf("Error opening directory\n");
         exit(1);
@@ -69,11 +74,12 @@ void listfiles(char *curdir)
 
     while ((subdir = readdir(dp)) != NULL)
     {
-
-        if (strcmp(subdir->d_name, ".") == 0 || strcmp(subdir->d_name, "..") == 0)
-        {
-            continue;
-        }
+        // struct stat *buf;
+        // if (stat(subdir, &buf) == 0)
+        // {
+        //     printf("Error opening file\n");
+        //     exit(1);
+        // }
 
         printf("%s\n", subdir->d_name);
     }
@@ -81,7 +87,6 @@ void listfiles(char *curdir)
 
 void changedir(char *path)
 {
-    printf("%s", path);
     if (chdir(path) == -1)
     {
         printf("Error changing directory\n");
@@ -90,5 +95,19 @@ void changedir(char *path)
     else
     {
         printf("Directory changed to %s\n", path);
+    }
+}
+
+void printdir()
+{
+    char newdir[1000];
+    if (getwd(newdir) == NULL)
+    {
+        printf("Error getting current directory\n");
+        exit(1);
+    }
+    else
+    {
+        printf("Current directory is %s\n", newdir);
     }
 }
