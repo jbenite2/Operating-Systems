@@ -17,6 +17,7 @@ void printdir();
 void copyfile(char *read_path, char *write_path);
 void helper_cp(char *input, char *output);
 void startprocess(char **argv, int i);
+void waitforanychild();
 
 int bytes_sum = 0;
 
@@ -80,6 +81,10 @@ int main(int argc, char *argv[])
             }
 
             startprocess(argv, i);
+        }
+        else if (strcmp(command, "wait-for-any-child") == 0)
+        {
+            waitforanychild();
         }
         else if (strcmp(command, "exit") == 0)
         {
@@ -270,5 +275,40 @@ void startprocess(char **argv, int i)
     {
         // this is the parent process
         printf("I am the parent process: PID %d\n", pid);
+    }
+}
+void waitforanychild()
+{
+    pid_t pid = fork();
+    int status;
+    if (pid == -1)
+    {
+        printf("Error getting process id\n");
+        exit(1);
+    }
+    else if (pid == 0)
+    {
+        // this is the child process
+        exit(5);
+    }
+    else
+    {
+        // this is the parent process
+        pid_t wpid = wait(&status);
+
+        if (wpid == -1)
+        {
+            printf("Error waiting for child process\n");
+            exit(1);
+        }
+
+        if (WIFEXITED(status))
+        {
+            printf("myshell: process %d exited normally with status %d\n", wpid, WEXITSTATUS(status));
+        }
+        else
+        {
+            printf("process %d exited abnormally with signal number %d.\n", wpid, WEXITSTATUS(status));
+        }
     }
 }
