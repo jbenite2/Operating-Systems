@@ -10,7 +10,7 @@ Goals of the project:
 - The way the Makefile is structured, all you have to do is change the name of the document you want to run in the SOURCE variable
 
 # Switch Statement
-- Use the _ sign to _:
+- Use the _ character to _:
     - 'q' 
         - exit
     - 'mouse click' 
