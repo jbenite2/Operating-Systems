@@ -26,23 +26,10 @@ typedef struct
     int end;
 } args;
 
-/*
-Compute the number of iterations at point x, y
-in the complex space, up to a maximum of maxiter.
-Return the number of iterations at that point.
-
-This example computes the Mandelbrot fractal:
-z = z^2 + alpha
-
-Where z is initially zero, and alpha is the location x + iy
-in the complex plane.  Note that we are using the "complex"
-numeric type in C, which has the special functions cabs()
-and cpow() to compute the absolute values and powers of
-complex values.
-*/
-
 // Global
 int nthreads = 0;
+int num;
+char str[2];
 
 static int compute_point(double x, double y, int max)
 {
@@ -138,9 +125,6 @@ void compute_image(double xmin, double xmax, double ymin, double ymax, int maxit
 
 int main(int argc, char *argv[])
 {
-    printf("Enter the number of threads: \n");
-    scanf("%d", &nthreads);
-
     // The initial boundaries of the fractal image in x,y space.
 
     double xmin = -1.5;
@@ -263,12 +247,17 @@ int main(int argc, char *argv[])
 
             compute_image(xmin, xmax, ymin, ymax, maxiter);
             break;
-        case '2':
+        case '1' ... '8':
+
+            // Changing String -> Integer
+            str[0] = c;
+            str[1] = '\0';
+            sscanf(str, "%d", &num);
             gfx_clear();
 
             pthread_mutex_init(&lock, NULL);
 
-            nthreads = 8;
+            nthreads = num;
 
             pthread_t threads[nthreads];
 
