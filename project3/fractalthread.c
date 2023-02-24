@@ -1,8 +1,8 @@
 /*
-fractal.c - Sample Mandelbrot Fractal Display
-Starting code for CSE 30341 Project 3.
+Name: Jose Benitez
+Date: February 24, 2023
+fractalthread.c - Make it Multithreaded
 */
-
 #include "gfx.h"
 
 #include <stdlib.h>
@@ -160,6 +160,29 @@ int main(int argc, char *argv[])
         // Quit if q is pressed
         case 'q':
             exit(0);
+        // Recenter the image if the mouse is clicked
+        case 1:
+            gfx_clear();
+
+            int x_center = gfx_xpos();
+            int y_center = gfx_ypos();
+
+            double oldx = (xmax + xmin) / 2;
+            double oldy = (ymax + ymin) / 2;
+
+            double newx = xmin + x_center * (xmax - xmin) / gfx_xsize();
+            double newy = ymin + y_center * (ymax - ymin) / gfx_ysize();
+
+            double xdiff = oldx - newx;
+            double ydiff = oldy - newy;
+
+            xmin -= xdiff;
+            xmax -= xdiff;
+            ymin -= ydiff;
+            ymax -= ydiff;
+
+            compute_image(xmin, xmax, ymin, ymax, maxiter);
+            break;
         // Zoom in if i is pressed
         case 'i':
             gfx_clear();
@@ -210,61 +233,38 @@ int main(int argc, char *argv[])
             ymax += shiftdown;
             compute_image(xmin, xmax, ymin, ymax, maxiter);
             break;
-        case 1:
-            gfx_clear();
-
-            int x_center = gfx_xpos();
-            int y_center = gfx_ypos();
-
-            double oldx = (xmax + xmin) / 2;
-            double oldy = (ymax + ymin) / 2;
-
-            double newx = xmin + x_center * (xmax - xmin) / gfx_xsize();
-            double newy = ymin + y_center * (ymax - ymin) / gfx_ysize();
-
-            double xdiff = oldx - newx;
-            double ydiff = oldy - newy;
-
-            xmin -= xdiff;
-            xmax -= xdiff;
-            ymin -= ydiff;
-            ymax -= ydiff;
-
-            compute_image(xmin, xmax, ymin, ymax, maxiter);
-            break;
+        // Decrease the number of iterations if - is pressed
         case '-':
             gfx_clear();
-
             maxiter /= 0.5;
-
             compute_image(xmin, xmax, ymin, ymax, maxiter);
             break;
-
+        // Increase the number of iterations if - is pressed
         case '+':
             gfx_clear();
-
             maxiter *= 0.5;
-
             compute_image(xmin, xmax, ymin, ymax, maxiter);
             break;
+        // Specify number of threads
         case '1' ... '8':
+
+            gfx_clear();
 
             // Changing String -> Integer
             str[0] = c;
             str[1] = '\0';
             sscanf(str, "%d", &num);
-            gfx_clear();
 
-            pthread_mutex_init(&lock, NULL);
-
+            // Initialize variables, arrays, and structs
             nthreads = num;
-
             pthread_t threads[nthreads];
-
             int divide = gfx_ysize() / nthreads;
-
             args *arg = (args *)malloc(nthreads * sizeof(args));
 
+            // Initialize lock
+            pthread_mutex_init(&lock, NULL);
+
+            // Create the threads
             for (int i = 0; i < nthreads; i++)
             {
 
@@ -279,10 +279,14 @@ int main(int argc, char *argv[])
                 pthread_create(&threads[i], NULL, t_compute_image, (void *)&arg[i]);
             }
 
+            // Join the threads
             for (int i = 0; i < nthreads; i++)
             {
                 pthread_join(threads[i], NULL);
             }
+
+            // Destroy lock and free memory
+            pthread_mutex_destroy(&lock);
 
             break;
         }
