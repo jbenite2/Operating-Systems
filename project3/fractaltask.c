@@ -1,6 +1,7 @@
 /*
-fractal.c - Sample Mandelbrot Fractal Display
-Starting code for CSE 30341 Project 3.
+Name: Jose Benitez
+Date: February 24, 2023
+fractaltask.c - Load Balancing with Tasks
 */
 
 #include "gfx.h"
@@ -13,7 +14,7 @@ Starting code for CSE 30341 Project 3.
 #include <complex.h>
 #include <pthread.h>
 
-// Global Variables and Mutexes
+// Global Variables, Arrays, and Mutexes
 pthread_mutex_t lock;
 pthread_mutex_t newlock;
 int nthreads = 0;
@@ -268,7 +269,10 @@ int main(int argc, char *argv[])
             maxiter *= 0.5;
             compute_image(xmin, xmax, ymin, ymax, maxiter);
             break;
+        // Specify number of threads
         case '1' ... '8':
+
+            gfx_clear();
 
             // Changing String -> Integer
             str[0] = c;
@@ -317,6 +321,7 @@ int main(int argc, char *argv[])
                 pthread_join(threads[i], NULL);
             }
 
+            // Destroy locks and free memory
             pthread_mutex_destroy(&lock);
             pthread_mutex_destroy(&newlock);
             break;
