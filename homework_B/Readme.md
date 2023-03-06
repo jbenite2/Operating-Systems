@@ -1,5 +1,5 @@
 # Program Description
-As part of the Operating Systems class, more specifically in the topic of Race Conditions and Concurrency, we were challenged to solve the Reader Writer problem. 
+As part of the Operating Systems class, more specifically in the topic of Race Conditions and Concurrency, we were challenged to solve the Reader-Writer problem. 
 
 # Diagram
 I sketched up a simple diagram to explain what happens when there are multiple readers and one writer trying to access a shared resource. This dilemma can be solved using semaphores.
