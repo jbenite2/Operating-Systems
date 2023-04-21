@@ -94,8 +94,8 @@ void print_frame_table(){
 
 void page_replacement(struct page_table *pt, struct disk * d, int page, int evictedPage, int frame, int bits){
 	//If statement that check if it's dirty
-	if (bits & PROT_WRITE) {
-    	disk_write(d, evictedPage, &physmem[frame * PAGE_SIZE]);
+	if(bits != 2 && bits != 3 && bits != 6 && bits != 7){
+		disk_write(d, evictedPage, &physmem[frame * PAGE_SIZE]);
 		disk_writes++;
 	}
     disk_read(d, page, &physmem[frame * PAGE_SIZE]);
@@ -106,13 +106,10 @@ void page_replacement(struct page_table *pt, struct disk * d, int page, int evic
 }
 
 void page_fault_handler(struct page_table *pt, int page)
-{
-	// Output the page fault to user
-	printf("\nPage fault on page #%d\n", page);
-    
-    // Get the length of the available frames and create an array to store them
-	int availableLength = nframes / sizeof(frame_table[0]);
-	int availableFrames[availableLength], count = 0;
+{	
+
+    // Create an array to store them
+	int availableFrames[nframes], count = 0;
 
 	// Loop through the frame_table and record the available frames
 	for (int i = 0; i < nframes; i++) {
@@ -123,25 +120,14 @@ void page_fault_handler(struct page_table *pt, int page)
 
 	// Randomly select a frame from the available frames and initialize bits to be used later
     int frame;
-    int bits;
-
-	
-	// Get the bits for the page
-    page_table_get_entry(pt, page, &frame, &bits);
-
-	//If bits are set to read and not write
-	if((bits & PROT_READ) && !(bits & PROT_WRITE)){ 
-		page_table_set_entry(pt, page, frame, bits | PROT_WRITE);
-	}
+	int bits;
 
 
     // CASE WHERE THERE ARE NO FREE FRAMES
     if (count == 0) {
-        // Implement page replacement algorithm 
-        printf("No free frames. Will proceed to make a page replacement using %s \n", algorithm);
+        // Implement page replacement algorithm
 		if (!strcmp(algorithm, "rand")) {
 			// Random page replacement
-			printf("Random page replacement. Frame %d will be replaced\n", frame);
 
 			// Choose a random frame
 			frame = rand() % page_table_get_nframes(pt);
@@ -156,7 +142,6 @@ void page_fault_handler(struct page_table *pt, int page)
 			frame = head->frame;
 
 			// FIFO page replacement
-			printf("FIFO page replacement. Frame %d will be replaced\n", frame);
 
 			// Send it to the back of the queue
 			dequeue();
@@ -174,7 +159,6 @@ void page_fault_handler(struct page_table *pt, int page)
 			frame = tail->frame;
 
 			// Custom page replacement
-			printf("Custom page replacement. Frame %d will be replaced\n", frame);
 
 			// Send it to the front of the list
 			pop();
@@ -196,7 +180,6 @@ void page_fault_handler(struct page_table *pt, int page)
 			}
 
 			// Least used page replacement
-			printf("Least used page replacement. Frame %d will be replaced\n", frame);
 
 			// Make disk adjustments
 			page_replacement(pt, disk, page, frame_table[frame], frame, bits);
@@ -223,14 +206,13 @@ void page_fault_handler(struct page_table *pt, int page)
 
     }
 
-	
+	// Get the bits for the page
+    page_table_get_entry(pt, page, &frame, &bits);
 
-    // //PRINT OUT Frame Table
-	// printf("Frame Table: \n");
-	// print_frame_table();
-
-    // // Print out the list
-    // printList();
+	//If bits are not writeable, set them to writeable
+	if(bits != 2 && bits != 3 && bits != 6 && bits != 7){
+		page_table_set_entry(pt, page, frame, bits | PROT_WRITE);
+	}
 	
 }
 
@@ -292,15 +274,9 @@ int main(int argc, char *argv[])
 	free(head);
 	free(tail);
 
-	printf("\n");
-
-	printf("Summarizing the results of the simulation:\n");
-
-	printf("Disk Reads: %d and Disk Writes: %d\n", disk_reads, disk_writes);
-	printf("Memory Counter: \n");
-	for (int i = 0; i < npages; i++) {
-		printf("Page %d: %d ",i, memory_counter[i]);
-	}
+	printf("Page Faults: %d\n", disk_reads+disk_writes);
+	printf("Disk Reads:  %d\n", disk_reads);
+	printf("Disk Writes: %d\n", disk_writes);
 	printf("\n");
     return 0;
 }
